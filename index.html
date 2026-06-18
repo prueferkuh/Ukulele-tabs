@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Ukulele Toolkit</title>
+    <style>
+        :root {
+            --bg-main: #151515;
+            --bg-card: #222222;
+            --accent: #FFB700;
+            --accent-hover: #E0A200;
+            --text-main: #FFFFFF;
+            --text-muted: #A0A0A0;
+            --border: #333333;
+            --tab-line: #555555;
+            --fret-line: #777777;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        header h1 {
+            color: var(--accent);
+            margin: 0 0 5px 0;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mode-selector {
+            display: flex;
+            width: 100%;
+            max-width: 550px;
+            margin-bottom: 15px;
+            background: #222;
+            border-radius: 6px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+        }
+
+        .mode-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background-color: var(--accent);
+            color: #000000;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            font-weight: bold;
+        }
+
+        .grid-buttons {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 380px) {
+            .grid-buttons {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .chord-types-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #2a2a2a;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        button:hover {
+            border-color: var(--accent);
+            background-color: #333333;
+        }
+
+        button.active {
+            background-color: var(--accent);
+            color: #000000;
+            border-color: var(--accent);
+        }
+
+        .result-box {
+            border-top: 2px solid var(--border);
+            padding-top: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chord-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 0 5px;
+        }
+
+        .chord-name {
+            font-size: 1.4rem; /* Leicht verkleinert, falls mehrere Akkorde nebeneinander stehen */
+            font-weight: bold;
+            color: var(--accent);
+            width: 100%;
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        .variation-badge {
+            background-color: #333;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .tab-instructions {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .fretboard-wrapper {
+            background: #111111;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 15px 10px;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .fret-numbers-row {
+            display: grid;
+            grid-template-columns: 40px repeat(5, 1fr);
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 5px;
+        }
+
+        .string-grid-container {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .string-row {
+            display: grid;
+            grid-template-columns: 40px repeat(5, 1fr);
+            height: 44px;
+            align-items: center;
+            position: relative;
+        }
+
+        .string-row::after {
+            content: "";
+            position: absolute;
+            left: 40px;
+            right: 0;
+            top: 50%;
+            height: 2px;
+            background-color: var(--tab-line);
+            z-index: 1;
+        }
+
+        .string-name-cell {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: var(--accent);
+            text-align: left;
+            padding-left: 10px;
+            z-index: 3;
+            background: #111111;
+        }
+
+        .fret-cell {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            border-right: 2px solid var(--fret-line);
+        }
+
+        .fret-cell:nth-child(2) {
+            border-left: 4px solid #999999;
+        }
+
+        .finger-dot {
+            width: 26px;
+            height: 26px;
+            background-color: var(--accent);
+            color: #000000;
+            font-weight: bold;
+            font-size: 0.85rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(255, 183, 0, 0.7);
+            z-index: 5;
+        }
+
+        .barre-line {
+            position: absolute;
+            width: 6px;
+            background-color: var(--accent);
+            z-index: 4;
+            box-shadow: 0 0 10px rgba(255, 183, 0, 0.5);
+            border-radius: 3px;
+        }
+
+        .open-string-dot {
+            width: 20px;
+            height: 20px;
+            background-color: #111111;
+            color: #2ecc71;
+            font-weight: bold;
+            font-size: 0.8rem;
+            border: 2px solid #2ecc71;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        .muted-string-dot {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.1rem;
+            z-index: 5;
+        }
+
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .nav-btn {
+            background-color: #2a2a2a;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .dots-indicator {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #444;
+            border-radius: 50%;
+        }
+
+        .dot.active {
+            background-color: var(--accent);
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Ukulele Toolkit</h1>
+    </header>
+
+    <div class="mode-selector">
+        <button class="mode-btn active" id="btn-mode-finder">Akkord Finder</button>
+        <button class="mode-btn" id="btn-mode-builder">Akkord Builder</button>
+    </div>
+
+    <div class="container">
+        
+        <div id="finder-controls">
+            <div class="section-title">1. Grundnote</div>
+            <div class="grid-buttons" id="root-container"></div>
+
+            <div class="section-title">2. Akkordtyp</div>
+            <div class="chord-types-grid" id="type-container"></div>
+        </div>
+
+        <div class="result-box">
+            <div class="chord-header">
+                <div class="chord-name" id="chord-display-name">-</div>
+                <div class="variation-badge" id="variation-display">-</div>
+            </div>
+
+            <div class="tab-instructions" id="instruction-text">← Swipe / Klicke das Griffbrett für Sound →</div>
+
+            <div class="fretboard-wrapper" id="fretboard-click-zone">
+                <div id="barre-container" style="position:absolute; left:0; top:0; right:0; bottom:0; pointer-events:none; z-index:4;"></div>
+
+                <div class="fret-numbers-row">
+                    <div>Saite</div>
+                    <div id="fret-head-0">O/X</div>
+                    <div id="fret-head-1">1</div>
+                    <div id="fret-head-2">2</div>
+                    <div id="fret-head-3">3</div>
+                    <div id="fret-head-4">4</div>
+                </div>
+
+                <div class="string-grid-container">
+                    <div class="string-row" id="row-A"><div class="string-name-cell">A</div><div class="fret-cell" data-string="3" data-idx="0"></div><div class="fret-cell" data-string="3" data-idx="1"></div><div class="fret-cell" data-string="3" data-idx="2"></div><div class="fret-cell" data-string="3" data-idx="3"></div><div class="fret-cell" data-string="3" data-idx="4"></div></div>
+                    <div class="string-row" id="row-E"><div class="string-name-cell">E</div><div class="fret-cell" data-string="2" data-idx="0"></div><div class="fret-cell" data-string="2" data-idx="1"></div><div class="fret-cell" data-string="2" data-idx="2"></div><div class="fret-cell" data-string="2" data-idx="3"></div><div class="fret-cell" data-string="2" data-idx="4"></div></div>
+                    <div class="string-row" id="row-C"><div class="string-name-cell">C</div><div class="fret-cell" data-string="1" data-idx="0"></div><div class="fret-cell" data-string="1" data-idx="1"></div><div class="fret-cell" data-string="1" data-idx="2"></div><div class="fret-cell" data-string="1" data-idx="3"></div><div class="fret-cell" data-string="1" data-idx="4"></div></div>
+                    <div class="string-row" id="row-G"><div class="string-name-cell">G</div><div class="fret-cell" data-string="0" data-idx="0"></div><div class="fret-cell" data-string="0" data-idx="1"></div><div class="fret-cell" data-string="0" data-idx="2"></div><div class="fret-cell" data-string="0" data-idx="3"></div><div class="fret-cell" data-string="0" data-idx="4"></div></div>
+                </div>
+            </div>
+
+            <div class="nav-controls" id="finder-navigation">
+                <button class="nav-btn" id="prev-btn">◄ Zurück</button>
+                <div class="dots-indicator" id="dots-container"></div>
+                <button class="nav-btn" id="next-btn">Weiter ►</button>
+            </div>
+            
+            <div id="builder-controls" class="hidden" style="margin-top:15px;">
+                <button class="nav-btn" id="clear-builder-btn" style="width:100%; background-color:#c0392b;">Griffbrett zurücksetzen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'finder';
+        let builderChords = [0, 0, 0, 3]; 
+
+        const chordDatabase = {
+            "C": {
+                "Dur": [[0,0,0,3], [5,4,3,3], [9,7,8,7]],
+                "Moll": [[0,3,3,3], [5,3,3,3], [8,7,8,10]],
+                "Aug": [[1,0,0,3], [5,4,4,3]], "Dim": [[2,3,2,3], [5,6,5,6]],
+                "7": [[0,0,0,1], [3,4,3,3]], "m7": [[0,0,1,1], [3,3,3,3]],
+                "maj7": [[0,0,0,2], [4,4,3,3]], "6": [[0,0,0,0], [2,4,3,3]], "sus4": [[0,0,1,3], [5,5,3,3]]
+            },
+            "C#": {
+                "Dur": [[1,1,1,4], [6,5,4,4]], "Moll": [[1,4,4,4], [6,4,4,4]],
+                "Aug": [[2,1,1,4]], "Dim": [[0,1,0,1], [3,4,3,4]],
+                "7": [[1,1,1,2], [4,5,4,4]], "m7": [[1,1,2,2], [4,4,4,4]],
+                "maj7": [[1,1,1,3], [5,5,4,4]], "6": [[1,1,1,1]], "sus4": [[1,1,2,4]]
+            },
+            "D": {
+                "Dur": [[2,2,2,0], [2,2,2,5], [7,6,5,5]], "Moll": [[2,2,1,0], [2,2,1,5], [7,5,5,5]],
+                "Aug": [[3,2,2,1]], "Dim": [[1,2,1,2]],
+                "7": [[2,2,2,3], [5,6,5,5]], "m7": [[2,2,1,3], [5,5,5,5]],
+                "maj7": [[2,2,2,4], [6,6,5,5]], "6": [[2,2,2,2]], "sus4": [[2,2,3,0], [2,2,3,5]]
+            },
+            "D#": {
+                "Dur": [[0,3,3,1], [3,3,3,6]], "Moll": [[3,3,2,1], [3,3,2,6]],
+                "Aug": [[0,3,3,2]], "Dim": [[2,3,2,3]],
+                "7": [[3,3,3,4], [6,7,6,6]], "m7": [[3,3,2,4], [6,6,6,6]],
+                "maj7": [[3,3,3,5]], "6": [[3,3,3,3]], "sus4": [[3,3,4,1]]
+            },
+            "E": {
+                "Dur": [[4,4,4,2], [1,4,0,2], [4,4,4,7]], "Moll": [[4,3,4,2], [0,4,3,2]],
+                "Aug": [[1,0,0,3]], "Dim": [[3,4,3,4]],
+                "7": [[1,2,0,2], [4,4,4,5]], "m7": [[0,2,0,2], [4,4,3,5]],
+                "maj7": [[1,3,0,2], [4,4,4,6]], "6": [[4,4,4,4]], "sus4": [[4,4,5,2]]
+            },
+            "F": {
+                "Dur": [[2,0,1,0], [5,5,5,3]], "Moll": [[1,0,1,3], [5,5,4,3]],
+                "Aug": [[2,1,1,0]], "Dim": [[1,2,1,2]],
+                "7": [[2,3,1,3], [5,5,5,6]], "m7": [[1,3,1,3], [5,5,4,6]],
+                "maj7": [[2,4,1,3]], "6": [[2,2,1,3]], "sus4": [[3,0,1,1]]
+            },
+            "F#": {
+                "Dur": [[3,1,2,1], [6,6,6,4]], "Moll": [[2,1,2,0], [2,1,2,4]],
+                "Aug": [[3,2,2,1]], "Dim": [[2,3,2,3]],
+                "7": [[2,4,2,4], [6,6,6,7]], "m7": [[2,4,2,4], [6,6,5,7]],
+                "maj7": [[3,5,2,4]], "6": [[3,3,2,4]], "sus4": [[4,1,2,2]]
+            },
+            "G": {
+                "Dur": [[0,2,3,2], [4,2,3,2], [7,7,7,5]], "Moll": [[0,2,3,1], [3,2,3,5]],
+                "Aug": [[4,3,3,2]], "Dim": [[0,1,1,1], [3,4,4,4]],
+                "7": [[0,2,1,2], [4,5,3,5]], "m7": [[0,2,1,1], [3,5,3,5]],
+                "maj7": [[0,2,2,2], [4,6,3,5]], "6": [[0,2,0,2]], "sus4": [[0,2,3,3]]
+            },
+            "G#": {
+                "Dur": [[5,3,4,3], [1,0,4,3]], "Moll": [[4,3,4,2]],
+                "Aug": [[1,0,0,3]], "Dim": [[1,2,2,2]],
+                "7": [[1,3,2,3], [5,6,4,5]], "m7": [[1,3,2,2], [4,5,4,2]],
+                "maj7": [[1,3,3,3]], "6": [[1,3,1,3]], "sus4": [[1,3,4,3]]
+            },
+            "A": {
+                "Dur": [[2,1,0,0], [6,4,5,4]], "Moll": [[2,0,0,0], [5,4,5,3]],
+                "Aug": [[2,1,1,4]], "Dim": [[2,3,2,3]],
+                "7": [[2,1,3,0], [0,1,0,0]], "m7": [[2,0,3,0], [0,0,0,0]],
+                "maj7": [[1,1,0,0], [6,4,4,4]], "6": [[2,1,2,0]], "sus4": [[2,2,0,0]]
+            },
+            "A#": {
+                "Dur": [[3,2,1,1], [7,5,6,5]], "Moll": [[3,1,1,1], [6,5,6,4]],
+                "Aug": [[3,2,2,5]], "Dim": [[3,4,3,4]],
+                "7": [[1,2,1,1], [3,5,4,5]], "m7": [[1,1,1,1], [3,5,3,5]],
+                "maj7": [[3,2,1,0], [2,2,1,1]], "6": [[0,2,1,1]], "sus4": [[3,3,1,1]]
+            },
+            "B": {
+                "Dur": [[4,3,2,2], [8,6,7,6]], "Moll": [[4,2,2,2], [7,6,7,5]],
+                "Aug": [[4,3,3,6]], "Dim": [[4,5,4,5]],
+                "7": [[2,3,2,2], [4,6,5,6]], "m7": [[2,2,2,2], [4,6,4,6]],
+                "maj7": [[4,3,2,1], [3,3,2,2]], "6": [[1,3,2,2]], "sus4": [[4,4,2,2]]
+            }
+        };
+
+        const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const baseFrequencies = [392.00, 261.63, 329.63, 440.00]; 
+        const stringBaseNotes = [7, 0, 4, 9]; 
+
+        const roots = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const types = ["Dur", "Moll", "Aug", "Dim", "7", "m7", "maj7", "6", "sus4"];
+
+        let currentRoot = "C"; let currentType = "Dur"; let currentVarIndex = 0;
+
+        const rootContainer = document.getElementById('root-container');
+        const typeContainer = document.getElementById('type-container');
+        const chordDisplayName = document.getElementById('chord-display-name');
+        const variationDisplay = document.getElementById('variation-display');
+        const dotsContainer = document.getElementById('dots-container');
+        const clickZone = document.getElementById('fretboard-click-zone');
+        const barreContainer = document.getElementById('barre-container');
+        const instructionText = document.getElementById('instruction-text');
+        
+        const finderControls = document.getElementById('finder-controls');
+        const finderNavigation = document.getElementById('finder-navigation');
+        const builderControls = document.getElementById('builder-controls');
+
+        document.getElementById('btn-mode-finder').addEventListener('click', (e) => {
+            document.getElementById('btn-mode-builder').classList.remove('active');
+            e.target.classList.add('active');
+            currentMode = 'finder';
+            finderControls.classList.remove('hidden');
+            finderNavigation.classList.remove('hidden');
+            builderControls.classList.add('hidden');
+            instructionText.textContent = "← Swipe / Klicke das Griffbrett für Sound →";
+            renderChord();
+        });
+
+        document.getElementById('btn-mode-builder').addEventListener('click', (e) => {
+            document.getElementById('btn-mode-finder').classList.remove('active');
+            e.target.classList.add('active');
+            currentMode = 'builder';
+            finderControls.classList.add('hidden');
+            finderNavigation.classList.add('hidden');
+            builderControls.classList.remove('hidden');
+            instructionText.textContent = "Tippe Bünde an, um Akkorde zu bauen & zu analysieren!";
+            renderChord();
+        });
+
+        let audioCtx = null;
+        function playUkuleleChord(chordData) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const now = audioCtx.currentTime;
+            chordData.forEach((fret, stringIdx) => {
+                if (fret === -1) return;
+                const freq = baseFrequencies[stringIdx] * Math.pow(2, fret / 12);
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now);
+
+                const stringDelay = stringIdx * 0.05;
+                gainNode.gain.setValueAtTime(0, now + stringDelay);
+                gainNode.gain.linearRampToValueAtTime(0.25, now + stringDelay + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + stringDelay + 0.5);
+
+                osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+                osc.start(now + stringDelay); osc.stop(now + stringDelay + 0.5);
+            });
+        }
+
+        clickZone.addEventListener('click', (e) => {
+            const cell = e.target.closest('.fret-cell');
+            if (currentMode === 'finder') {
+                const variations = chordDatabase[currentRoot]?.[currentType] || [[0,0,0,0]];
+                if(variations[currentVarIndex]) playUkuleleChord(variations[currentVarIndex]);
+                return;
+            }
+
+            if (currentMode === 'builder' && cell) {
+                const stringIdx = parseInt(cell.getAttribute('data-string')); 
+                const visualIdx = parseInt(cell.getAttribute('data-idx'));    
+
+                if (visualIdx === 0) {
+                    builderChords[stringIdx] = builderChords[stringIdx] === 0 ? -1 : 0;
+                } else {
+                    builderChords[stringIdx] = builderChords[stringIdx] === visualIdx ? 0 : visualIdx;
+                }
+
+                renderChord();
+                playUkuleleChord(builderChords);
+            }
+        });
+
+        // OPTIMIERTE ERKENNUNGS-LOGIK: SAMMELT NUN MEHRERE ERGEBNISSE
+        function analyzeBuilderChord(chordData) {
+            if (chordData.every(f => f === -1)) return "Stumm";
+
+            let notes = [];
+            chordData.forEach((fret, stringIdx) => {
+                if (fret !== -1) {
+                    let semitone = (stringBaseNotes[stringIdx] + fret) % 12;
+                    if (!notes.includes(semitone)) notes.push(semitone);
+                }
+            });
+            notes.sort((a, b) => a - b);
+
+            if(notes.length === 0) return "Keine Töne";
+
+            let foundChords = [];
+
+            // Gehe alle 12 Töne als hypothetische Grundtöne durch
+            for (let root = 0; root < 12; root++) {
+                // Berechne die Intervalle relativ zu diesem Grundton
+                let intervals = Array.from(new Set(notes.map(n => (n - root + 12) % 12))).sort((a,b)=>a-b);
+                
+                // Wir prüfen, ob der angenommene Grundton überhaupt Teil des Griffs ist
+                // (Optional: entfernt man dies, erkennt das System auch Chords mit "fehlendem Grundton")
+                if (!notes.includes(root)) continue;
+
+                const hasThird = intervals.includes(4);
+                const hasMinorThird = intervals.includes(3);
+                const hasFifth = intervals.includes(7);
+                const hasSeventh = intervals.includes(10);
+                const hasMajorSeventh = intervals.includes(11);
+                const hasSixth = intervals.includes(9);
+                const hasFourth = intervals.includes(5);
+
+                let rootName = noteNames[root];
+
+                if (hasThird && hasFifth && hasSeventh && intervals.length === 4) foundChords.push(rootName + "7");
+                else if (hasMinorThird && hasFifth && hasSeventh && intervals.length === 4) foundChords.push(rootName + "m7");
+                else if (hasThird && hasFifth && hasMajorSeventh && intervals.length === 4) foundChords.push(rootName + "maj7");
+                else if (hasThird && hasFifth && hasSixth && intervals.length === 4) foundChords.push(rootName + "6");
+                else if (hasThird && hasFifth && intervals.length === 3) foundChords.push(rootName); // Dur
+                else if (hasMinorThird && hasFifth && intervals.length === 3) foundChords.push(rootName + "m"); // Moll
+                else if (hasThird && intervals.includes(8) && intervals.length === 3) foundChords.push(rootName + "aug");
+                else if (hasMinorThird && intervals.includes(6) && intervals.length === 3) foundChords.push(rootName + "dim");
+                else if (hasFourth && hasFifth && intervals.length === 3) foundChords.push(rootName + "sus4");
+            }
+
+            // Wenn Akkorde via Harmonielehre gefunden wurden, gib sie getrennt aus
+            if (foundChords.length > 0) {
+                // Duplikate filtern, falls vorhanden
+                return Array.from(new Set(foundChords)).join(" / ");
+            }
+
+            // Fallback: Reine Notennamen anzeigen, wenn es keine Standard-Struktur ist
+            return notes.map(n => noteNames[n]).join("-");
+        }
+
+        function renderChord() {
+            let chordData = [0,0,0,0];
+            let startFret = 1;
+
+            if (currentMode === 'finder') {
+                chordDisplayName.textContent = `${currentRoot} ${currentType}`;
+                const variations = chordDatabase[currentRoot]?.[currentType] || [[0,0,0,0]];
+                
+                if (!chordDatabase[currentRoot][currentType]) {
+                    chordData = chordDatabase[currentRoot]["Dur"][0];
+                    variationDisplay.textContent = "Form 1 von 1";
+                } else {
+                    if(currentVarIndex >= variations.length) currentVarIndex = 0;
+                    if(currentVarIndex < 0) currentVarIndex = variations.length - 1;
+                    chordData = variations[currentVarIndex]; 
+                    variationDisplay.textContent = `Form ${currentVarIndex + 1} von ${variations.length}`;
+                }
+                
+                variationDisplay.style.display = "block";
+                const maxFret = Math.max(...chordData);
+                if (maxFret > 4) startFret = maxFret - 3;
+            } else {
+                chordData = builderChords;
+                variationDisplay.style.display = "block";
+                variationDisplay.textContent = "Multi-Erkennung";
+                chordDisplayName.textContent = analyzeBuilderChord(chordData);
+                startFret = 1; 
+            }
+
+            if(currentMode === 'finder') {
+                const vars = chordDatabase[currentRoot]?.[currentType] || [[0,0,0,0]];
+                dotsContainer.innerHTML = '';
+                vars.forEach((_, idx) => {
+                    const dot = document.createElement('div');
+                    dot.className = `dot ${idx === currentVarIndex ? 'active' : ''}`;
+                    dotsContainer.appendChild(dot);
+                });
+            } else {
+                dotsContainer.innerHTML = '';
+            }
+
+            document.getElementById('fret-head-0').textContent = startFret > 1 ? `Lage: ${startFret}` : 'O/X';
+            document.getElementById('fret-head-0').style.color = startFret > 1 ? 'var(--accent)' : 'var(--text-muted)';
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`fret-head-${i}`).textContent = startFret + i - 1;
+            }
+
+            renderStringCells('A', chordData[3], startFret);
+            renderStringCells('E', chordData[2], startFret);
+            renderStringCells('C', chordData[1], startFret);
+            renderStringCells('G', chordData[0], startFret);
+
+            requestAnimationFrame(() => { drawBarre(chordData, startFret); });
+        }
+
+        function renderStringCells(stringName, activeFret, startFret) {
+            const row = document.getElementById(`row-${stringName}`);
+            const cells = row.querySelectorAll('.fret-cell');
+            
+            cells.forEach((cell, idx) => {
+                cell.innerHTML = '';
+                if (idx === 0) {
+                    if (activeFret === 0) {
+                        const d = document.createElement('div'); d.className = 'open-string-dot'; d.textContent = '0'; cell.appendChild(d);
+                    } else if (activeFret === -1) {
+                        const d = document.createElement('div'); d.className = 'muted-string-dot'; d.textContent = 'X'; cell.appendChild(d);
+                    }
+                } else {
+                    const currentCellFret = startFret + idx - 1;
+                    if (activeFret === currentCellFret) {
+                        const d = document.createElement('div'); d.className = 'finger-dot'; d.textContent = currentCellFret; cell.appendChild(d);
+                    }
+                }
+            });
+        }
+
+        function drawBarre(chordData, startFret) {
+            barreContainer.innerHTML = '';
+            const fretCounts = {};
+            chordData.forEach(fret => { if(fret > 0) fretCounts[fret] = (fretCounts[fret] || 0) + 1; });
+
+            Object.keys(fretCounts).forEach(fretStr => {
+                const fret = parseInt(fretStr);
+                if (fretCounts[fret] >= 3) {
+                    const visualColumnIdx = fret - startFret + 1; 
+                    if(visualColumnIdx < 1 || visualColumnIdx > 4) return;
+
+                    const stringOrder = ['G', 'C', 'E', 'A'];
+                    let firstRowIdx = -1; let lastRowIdx = -1;
+
+                    chordData.forEach((f, sIdx) => {
+                        if(f === fret) { if(firstRowIdx === -1) firstRowIdx = sIdx; lastRowIdx = sIdx; }
+                    });
+
+                    const topRowEl = document.getElementById(`row-${stringOrder[lastRowIdx]}`).querySelectorAll('.fret-cell')[visualColumnIdx];
+                    const bottomRowEl = document.getElementById(`row-${stringOrder[firstRowIdx]}`).querySelectorAll('.fret-cell')[visualColumnIdx];
+                    
+                    if(!topRowEl || !bottomRowEl) return; 
+
+                    const rectTop = topRowEl.getBoundingClientRect();
+                    const rectBottom = bottomRowEl.getBoundingClientRect();
+                    const wrapperRect = clickZone.getBoundingClientRect();
+
+                    const barre = document.createElement('div');
+                    barre.className = 'barre-line';
+                    barre.style.left = (rectTop.left - wrapperRect.left + rectTop.width/2 - 3) + 'px';
+                    barre.style.top = (rectTop.top - wrapperRect.top + 8) + 'px';
+                    barre.style.height = (rectBottom.bottom - rectTop.top - 16) + 'px';
+
+                    barreContainer.appendChild(barre);
+                }
+            });
+        }
+
+        roots.forEach(root => {
+            const btn = document.createElement('button'); btn.textContent = root;
+            if(root === currentRoot) btn.classList.add('active');
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#root-container button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active'); currentRoot = root; currentVarIndex = 0; renderChord();
+            });
+            rootContainer.appendChild(btn);
+        });
+
+        types.forEach(type => {
+            const btn = document.createElement('button'); btn.textContent = type;
+            if(type === currentType) btn.classList.add('active');
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#type-container button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active'); currentType = type; currentVarIndex = 0; renderChord();
+            });
+            typeContainer.appendChild(btn);
+        });
+
+        document.getElementById('prev-btn').addEventListener('click', () => { if(currentMode === 'finder') { currentVarIndex--; renderChord(); } });
+        document.getElementById('next-btn').addEventListener('click', () => { if(currentMode === 'finder') { currentVarIndex++; renderChord(); } });
+
+        document.getElementById('clear-builder-btn').addEventListener('click', () => {
+            builderChords = [0, 0, 0, 0];
+            renderChord();
+        });
+
+        let touchStartX = 0; let touchEndX = 0;
+        clickZone.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+        clickZone.addEventListener('touchend', (e) => { 
+            if (currentMode !== 'finder') return;
+            touchEndX = e.changedTouches[0].screenX; 
+            const threshold = 55;
+            if (touchStartX - touchEndX > threshold) { currentVarIndex++; renderChord(); } 
+            else if (touchEndX - touchStartX > threshold) { currentVarIndex--; renderChord(); }
+        }, {passive: true});
+
+        renderChord();
+    </script>
+</body>
+</html>
